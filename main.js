@@ -5,10 +5,25 @@ var qs = require('querystring');
 var template = require('./lib/template');
 var path = require('path');
 var sanitizehtml = require('sanitize-html');
+var cookie = require('cookie');
+
+function authisOwner(request, response) {
+    var isOwner = false;
+    var cookies = {};
+    if (request.headers.cookie) {
+        cookies = cookie.parse(request.headers.cookie);
+    }
+    if (cookies.email === 'admin' && cookies.pw === 'admin') {
+        isOwner = true;
+    }
+    return isOwner;
+}
 
 var app = http.createServer(function(request,response) {
     var QueryData = url.parse(request.url, true).query;
     var uri = url.parse(request.url, true).pathname;
+    var isOwner = authisOwner(request, response);
+    console.log(isOwner);
 
     if (uri === '/') {
         if (QueryData.page === undefined) {
@@ -151,6 +166,27 @@ var app = http.createServer(function(request,response) {
             </form>`, `<a href="/create">create</a>`);
                 response.writeHead(200);
                 response.end(html);
+        });
+     } else if (uri === '/login_process') {
+        var body = '';
+        request.on('data', function(data) {
+            body = body+data; 
+        });
+        request.on('end', function() {
+            var post = qs.parse(body);
+            if (post.email === 'admin' && post.pw === 'admin') {
+            response.writeHead(302, {
+                'Set-Cookie': [
+                    `email=${post.email}`,
+                    `pw=${post.pw}`,
+                    `nickname=admin`
+                ],
+                Location: `/`
+            });
+            response.end();
+        } else {
+            response.end('hwo?');
+        }
         });
      } else {
         response.writeHead(404);

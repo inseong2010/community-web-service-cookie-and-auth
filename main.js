@@ -19,19 +19,25 @@ function authisOwner(request, response) {
     return isOwner;
 }
 
+function authStatusUI(request, response) {
+    var authSatusUI = '<a href="/login">login</a>';
+    if (authisOwner(request, response)) {
+        authSatusUI = '<a href="/logout_process">logout</a>'
+    }
+    return authSatusUI;
+}
+
 var app = http.createServer(function(request,response) {
     var QueryData = url.parse(request.url, true).query;
     var uri = url.parse(request.url, true).pathname;
-    var isOwner = authisOwner(request, response);
-    console.log(isOwner);
-
+   
     if (uri === '/') {
         if (QueryData.page === undefined) {
             fs.readdir('./data', function(err, filelist) {
             var title = 'welcome';
             var description = 'hello';
             var list = template.LIST(filelist);
-            var html = template.HTML(title, list, `<h2>${title}</h2><p>${description}</p>`, `<a href="/create">create</a>`);
+            var html = template.HTML(title, list, `<h2>${title}</h2><p>${description}</p>`, `<a href="/create">create</a>`, authStatusUI(request, response));
                 response.writeHead(200);
                 response.end(html);
             });
@@ -50,7 +56,7 @@ var app = http.createServer(function(request,response) {
                     <input type="hidden" name="id" value="${sanitizedTitle}">
                     <input type="submit" value="delete">
                  </form>
-                 `);
+                 `, authStatusUI(request, response));
                     response.writeHead(200);
                     response.end(html);
                 });
@@ -71,7 +77,7 @@ var app = http.createServer(function(request,response) {
                     <input type="submit">
                 </p>
                 </form>
-            `, '');
+            `, '', authStatusUI(request, response));
             response.writeHead(200);
             response.end(html);
             });
@@ -111,7 +117,7 @@ var app = http.createServer(function(request,response) {
                     <input type="submit">
                 </p>
             </form>
-            `, `<a href="/create">create</a> <a href="/update?page=${title}">update</a>`);
+            `, `<a href="/create">create</a> <a href="/update?page=${title}">update</a>`, authStatusUI(request, response));
                 response.writeHead(200);
                 response.end(html);
             });

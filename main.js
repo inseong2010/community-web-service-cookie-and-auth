@@ -63,6 +63,10 @@ var app = http.createServer(function(request,response) {
             });
         }
     } else if (uri === '/create') {
+        if (authisOwner(request, response) === false) {
+            response.end(`Login requried!!`)
+            return false;
+        }
         if (QueryData.page === undefined) {
             fs.readdir('./data', function(err, filelist) {
             var title = 'new page';
@@ -83,6 +87,10 @@ var app = http.createServer(function(request,response) {
             });
         }
     } else if (uri === '/create_process') {
+        if (authisOwner(request, response) === false) {
+            response.end(`Login requried!!`)
+            return false;
+        }
         var body = '';
         request.on('data', function(data) {
             body = body+data; 
@@ -100,6 +108,10 @@ var app = http.createServer(function(request,response) {
             });
         });
     } else if (uri === '/update') {
+        if (authisOwner(request, response) === false) {
+            response.end(`Login requried!!`)
+            return false;
+        }
         fs.readdir('./data', function(err, filelist) {
             var filteredhack = path.parse(QueryData.page).base;
             fs.readFile(`data/${filteredhack}`, 'utf8', function(err, description) {
@@ -123,6 +135,10 @@ var app = http.createServer(function(request,response) {
             });
         });
     } else if (uri === '/update_process') {
+        if (authisOwner(request, response) === false) {
+            response.end(`Login requried!!`)
+            return false;
+        }
         var body = '';
         request.on('data', function(data) {
             body = body+data; 
@@ -147,6 +163,10 @@ var app = http.createServer(function(request,response) {
             });
         });
     } else if (uri === '/delete_process') {
+        if (authisOwner(request, response) === false) {
+            response.end(`Login requried!!`)
+            return false;
+        }
         var body = '';
         request.on('data', function(data) {
             body = body+data; 
@@ -174,6 +194,10 @@ var app = http.createServer(function(request,response) {
                 response.end(html);
         });
      } else if (uri === '/login_process') {
+        if (authisOwner(request, response) === false) {
+            response.end(`Login requried!!`)
+            return false;
+        }
         var body = '';
         request.on('data', function(data) {
             body = body+data; 
@@ -194,7 +218,24 @@ var app = http.createServer(function(request,response) {
             response.end('hwo?');
         }
         });
-     } else {
+     } else if (uri === '/logout_process') {
+        var body = '';
+        request.on('data', function(data) {
+            body = body+data; 
+        });
+        request.on('end', function() {
+            var post = qs.parse(body);
+            response.writeHead(302, {
+                'Set-Cookie': [
+                    `email=; Max-Age=0`,
+                    `pw=; Max-Age=0`,
+                    `nickname=; Max-Age=0`
+                ],
+                Location: `/`
+            });
+            response.end();
+        });
+    }else {
         response.writeHead(404);
         response.end(`
         <!DOCTYPE html>
